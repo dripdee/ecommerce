@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<!-- Moved from root index.html. Original content preserved. -->
+<!-- ...existing content... -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SwiftStyle — 15 Min Fashion (Final)</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <!-- Add Google Fonts for better typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+  :root{
+    --primary:#ff4b2b; --accent:#ff8a66; --bg:#f6f7f9; --muted:#6b7280; --dark:#111827;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--dark)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#111;color:#fff}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo-svg{width:44px;height:44px}
+  nav{display:flex;gap:12px;align-items:center}
+  nav a {
+      color: #fff;
+      text-decoration: none;
+      position: relative;
+      transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      outline: none;
+    }
+    nav a:not(.kids-btn):hover, nav a:not(.kids-btn):focus {
+      color: #222;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(255,75,43,0.10);
+      transform: translateY(-2px) scale(1.04);
+      text-decoration: none;
+    }
+    nav a:not(.kids-btn):active {
+      background: #ff8a66;
+      color: #fff;
+      transform: scale(0.98);
+  }
+  .cart-badge{background:#fff;color:var(--primary);padding:6px 10px;border-radius:999px;font-weight:800}
+  .container{max-width:1150px;margin:18px auto;padding:0 16px}
+  .hero{display:flex;gap:18px;align-items:center;justify-content:space-between;background:white;padding:18px;border-radius:12px;box-shadow:0 8px 28px rgba(2,6,23,.06)}
+  .actions{display:flex;gap:10px;margin-top:14px;align-items:center}
+  button.cta{background:var(--primary);color:white;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .grid{display:grid;grid-template-columns:1fr 400px;gap:18px;margin-top:18px}
+  .catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .card{background:white;padding:12px;border-radius:12px;box-shadow:0 8px 18px rgba(2,6,23,.06);text-align:center}
+  .card img{width:100%;height:180px;object-fit:cover;border-radius:8px}
+  #trackerPanel{background:white;padding:12px;border-radius:12px;box-shadow:0 8px 18px rgba(2,6,23,.06);display:flex;flex-direction:column;gap:10px}
+  #map{height:360px;border-radius:8px;overflow:hidden}
+  .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
+  .progress > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--accent))}
+  .offer{position:fixed;right:18px;bottom:18px;background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:999}
+  .offer button{background:transparent;border:0;color:#fff;font-weight:700;margin-left:10px;cursor:pointer}
+  footer{text-align:center;padding:26px 12px;color:var(--muted);font-size:.95rem;margin-top:20px}
+  @keyframes slideUp {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+  @media(max-width:980px){.grid{grid-template-columns:1fr}#map{height:260px}}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <!-- Updated modern logo with shopping bag icon -->
+      <svg class="logo-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SwiftStyle logo">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1">
+            <stop offset="0" stop-color="#ff4b2b"/>
+            <stop offset="1" stop-color="#ff8a66"/>
+          </linearGradient>
+        </defs>
+        <rect rx="12" width="64" height="64" fill="url(#g)"/>
+        <!-- Shopping bag icon -->
+        <path d="M20 22h24v28a2 2 0 01-2 2H22a2 2 0 01-2-2V22z" fill="#fff" opacity="0.95"/>
+        <path d="M26 22v-4a6 6 0 0112 0v4" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Speed lines to indicate fast delivery -->
+        <rect x="46" y="28" width="10" height="2" rx="1" fill="#fff" opacity="0.8"/>
+        <rect x="48" y="34" width="8" height="2" rx="1" fill="#fff" opacity="0.6"/>
+        <rect x="50" y="40" width="6" height="2" rx="1" fill="#fff" opacity="0.4"/>
+      </svg>
+      <div>
+        <div style="font-family: 'Montserrat', 'Poppins', Inter, sans-serif; font-weight:800; font-size:1.3rem; letter-spacing:-0.5px;">
+          <span style="color:#fff;filter:drop-shadow(0 1px 2px #ff4b2b);">S</span><span style="background: linear-gradient(90deg, #ff4b2b, #ff8a66); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">wiftStyle</span>
+        
+        </div>
+        <small style="
+          color: #ff8a66;
+          font-family: 'Montserrat', 'Poppins', Inter, sans-serif;
+          font-size: 1.0rem;
+          letter-spacing: 0.5px;
+          font-weight: 300;
+          background: linear-gradient(90deg, #ececec 40%, #ffeeeb 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          filter: drop-shadow(2px 1px 2px #fff2);
+        ">Fashion at your door in 15 minutes</small>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#" style="color:#fff;text-decoration:none">Men</a>
+      <a href="#" style="color:#fff;text-decoration:none">Women</a>
+    <a href="#" style="color:#fff;text-decoration:none;background:linear-gradient(90deg,#9333ea,#ec4899);padding:6px 12px;border-radius:20px;font-weight:600" class="kids-btn">Kids</a>
+      <a href="#" style="color:#fff;text-decoration:none">Offers</a>
+      <span class="cart-badge" id="cartBadge">Cart: 0</span>
+    </nav>
+  </header>
+
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <h2 style="font-family:'Poppins',Inter,sans-serif;font-size:2.2rem;letter-spacing:-1px;">Gen-Z Styles, <span style="color:var(--primary)">15-min Delivery</span> 🚀</h2>
+        <div class="muted" style="font-size:1.1rem;">Hyped fits, viral trends, and instant checkout. <span style="color:var(--primary)">#StayFresh</span></div>
+        <div class="actions">
+          <button class="cta" id="globalBuy">🛒 One-Click Buy</button>
+          <button class="cta" id="locBtn" style="background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;box-shadow:0 2px 8px rgba(255,75,43,.08);font-weight:700;">📍 Detect My Location</button>
+          <div style="background:#fff;padding:8px 10px;border-radius:10px;margin-left:auto;text-align:center">
+            <div style="font-size:.8rem;color:var(--muted)">ETA</div>
+            <div id="etaDisplay" style="font-weight:800">--:--</div>
+          </div>
+        </div>
+      </div>
+      <div style="width:260px;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+  <div style="background:white;padding:10px;border-radius:10px;min-width:170px;text-align:center">Order Status<div id="orderStatus" style="font-weight:800;margin-top:6px">No orders yet</div></div>
+        <div style="background:white;padding:10px;border-radius:10px;min-width:170px;text-align:center">Delivery Promise<div style="font-weight:800;color:var(--primary);margin-top:6px">15 minutes 🚀</div></div>
+      </div>
+    </section>
+
+    <!-- Category Images Row -->
+    <div id="categories" style="display:flex;gap:18px;overflow-x:auto;margin:24px 0 10px 0;padding-bottom:8px;">
+      <div class="cat-card" data-cat="T-Shirts" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid #ff4b2b;">
+        <div style="font-weight:600;margin-top:6px;">T-Shirts</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹299</div>
+      </div>
+      <div class="cat-card" data-cat="Jackets" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid #ff8a66;">
+        <div style="font-weight:600;margin-top:6px;">Jackets</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹799</div>
+      </div>
+      <div class="cat-card" data-cat="Sneakers" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid #ff4b2b;">
+        <div style="font-weight:600;margin-top:6px;">Sneakers</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹699</div>
+      </div>
+      <div class="cat-card" data-cat="Sunglasses" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid #ff8a66;">
+        <div style="font-weight:600;margin-top:6px;">Sunglasses</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹199</div>
+      </div>
+      <div class="cat-card" data-cat="Totes" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid #ff4b2b;">
+        <div style="font-weight:600;margin-top:6px;">Totes</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹249</div>
+      </div>
+      <div class="cat-card" data-cat="Kids" style="min-width:120px;cursor:pointer;text-align:center;">
+        <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=400&auto=format&fit=crop" style="width:90px;height:90px;object-fit:cover;border-radius:16px;border:3px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,#9333ea,#ec4899) border-box;">
+        <div style="font-weight:600;margin-top:6px;background:linear-gradient(90deg,#9333ea,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">👶 Kids</div>
+        <div style="color:var(--muted);font-size:.95rem;">from ₹199</div>
+      </div>
+    </div>
+
+    <!-- Filters Sidebar -->
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start;">
+      <aside id="filters" style="background:#fff;padding:22px 18px 18px 18px;border-radius:16px;box-shadow:0 8px 24px rgba(2,6,23,.07);min-width:220px;max-width:260px;">
+        <div style="font-weight:700;font-size:1.15rem;margin-bottom:18px;letter-spacing:-.5px;">Filters</div>
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;font-size:.98rem;">Category</label>
+          <select id="filterCategory" style="width:100%;margin-top:6px;padding:7px 12px;border-radius:8px;border:1px solid #eee;font-size:1rem;">
+            <option value="">All Categories</option>
+            <option value="T-Shirts">T-Shirts</option>
+            <option value="Jackets">Jackets</option>
+            <option value="Sneakers">Sneakers</option>
+            <option value="Sunglasses">Sunglasses</option>
+            <option value="Totes">Totes</option>
+            <option value="Kids" style="background:linear-gradient(90deg,#9333ea,#ec4899);color:#fff;font-weight:600">👶 Kids</option>
+          </select>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;font-size:.98rem;">Price</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <input id="filterPriceRange" type="range" min="0" max="2000" step="50" value="2000" style="flex:1;">
+            <span id="priceRangeValue" style="font-weight:600;color:var(--primary);min-width:80px;text-align:right;">₹2000</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.95rem;color:var(--muted);margin-top:2px;">
+            <span>₹0</span><span>₹2000+</span>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;font-size:.98rem;">Tag</label>
+          <select id="filterTag" style="width:100%;margin-top:6px;padding:7px 12px;border-radius:8px;border:1px solid #eee;font-size:1rem;">
+            <option value="">All Tags</option>
+            <option value="New">New</option>
+            <option value="Hot">Hot</option>
+            <option value="Trending">Trending</option>
+            <option value="Eco">Eco</option>
+          </select>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;font-size:.98rem;">Rating</label>
+          <select id="filterRating" style="width:100%;margin-top:6px;padding:7px 12px;border-radius:8px;border:1px solid #eee;font-size:1rem;">
+            <option value="">Any</option>
+            <option value="4">4★ & above</option>
+            <option value="3">3★ & above</option>
+            <option value="2">2★ & above</option>
+          </select>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-weight:600;font-size:.98rem;">Search</label>
+          <input id="filterSearch" type="text" placeholder="Search..." style="width:100%;margin-top:6px;padding:7px 12px;border-radius:8px;border:1px solid #eee;font-size:1rem;">
+        </div>
+      </aside>
+      <div>
+        <h3 style="margin:14px 0 8px;font-family:'Poppins',Inter,sans-serif;font-size:1.3rem;">🔥 Hottest Drops</h3>
+        <div class="catalog" id="catalog">
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=400&auto=format&fit=crop" alt="Tee" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Oversized Graphic Tee</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹349</div>
+            <div style="color:#888;font-size:.95rem;">Viral print, 100% cotton</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop" alt="Jacket" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Denim Shacket</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹999</div>
+            <div style="color:#888;font-size:.95rem;">Unisex, Y2K vibes</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=400&auto=format&fit=crop" alt="Sneakers" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Chunky Sneakers</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹1199</div>
+            <div style="color:#888;font-size:.95rem;">All-day comfort</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=400&auto=format&fit=crop" alt="Sunglasses" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Retro Sunglasses</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹299</div>
+            <div style="color:#888;font-size:.95rem;">UV400, festival ready</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=400&auto=format&fit=crop" alt="Tote" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Canvas Tote Bag</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹249</div>
+            <div style="color:#888;font-size:.95rem;">Eco, fits your iPad</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop" alt="Crop Top" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Tie-Dye Crop Top</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹399</div>
+            <div style="color:#888;font-size:.95rem;">Pastel shades</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <h3 style="margin:14px 0 8px;font-family:'Poppins',Inter,sans-serif;font-size:1.3rem;">🔥 Hottest Drops</h3>
+        <div class="catalog" id="catalog2">
+          <a href="product1.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=400&auto=format&fit=crop" alt="Tee" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Oversized Graphic Tee</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹349</div>
+            <div style="color:#888;font-size:.95rem;">Viral print, 100% cotton</div>
+          </a>
+          <a href="product2.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop" alt="Jacket" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Denim Shacket</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹999</div>
+            <div style="color:#888;font-size:.95rem;">Unisex, Y2K vibes</div>
+          </a>
+          <a href="product3.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=400&auto=format&fit=crop" alt="Sneakers" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Chunky Sneakers</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹1199</div>
+            <div style="color:#888;font-size:.95rem;">All-day comfort</div>
+          </a>
+          <a href="product4.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=400&auto=format&fit=crop" alt="Sunglasses" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Retro Sunglasses</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹299</div>
+            <div style="color:#888;font-size:.95rem;">UV400, festival ready</div>
+          </a>
+          <a href="product5.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=400&auto=format&fit=crop" alt="Tote" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Canvas Tote Bag</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹249</div>
+            <div style="color:#888;font-size:.95rem;">Eco, fits your iPad</div>
+          </a>
+          <a href="product6.html" class="card" style="text-align:center;text-decoration:none;color:inherit;">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop" alt="Crop Top" style="width:100%;height:180px;object-fit:cover;border-radius:8px">
+            <h4 style="margin:10px 0 4px 0;font-size:1.1rem;">Tie-Dye Crop Top</h4>
+            <div style="color:#ff4b2b;font-weight:700;font-size:1.1rem;">₹399</div>
+            <div style="color:#888;font-size:.95rem;">Pastel shades</div>
+          </a>
+        </div>
+      </div>
+
+      <aside id="trackerPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:.85rem;color:var(--muted)">Destination</div><div id="destLabel" style="font-weight:800">No destination</div></div>
+          <div style="text-align:right"><div style="font-size:.85rem;color:var(--muted)">Progress</div><div id="progressPct" style="font-weight:800">0%</div></div>
+        </div>
+
+        <div id="map"></div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <div style="flex:1"><div class="progress"><span id="progressBar"></span></div></div>
+          <div style="width:84px;text-align:right"><div style="font-size:.75rem;color:var(--muted)">ETA</div><div id="etaSmall" style="font-weight:800">--:--</div></div>
+        </div>
+
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="cta" id="startSim" disabled>Start Order Tracker</button>
+          <button class="ghost" id="centerMap">Center Map</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" style="display:none;position:fixed;top:0;right:0;width:370px;max-width:100vw;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:1001;padding:0;overflow-y:auto;transition:transform .2s;">
+    <div style="padding:18px 18px 10px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;">
+      <div style="font-weight:700;font-size:1.2rem">🛒 Your Cart</div>
+      <button id="closeCart" style="background:transparent;border:0;font-size:1.5rem;cursor:pointer">&times;</button>
+    </div>
+    <div id="cartItems" style="padding:18px"></div>
+    <div id="cartSummary" style="padding:18px;border-top:1px solid #eee;"></div>
+  </div>
+
+  <!-- Order Confirmation Modal -->
+  <div id="orderModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.18);z-index:1002;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:16px;max-width:95vw;width:400px;box-shadow:0 8px 32px rgba(0,0,0,.18);text-align:center;">
+      <div style="font-size:2.2rem;margin-bottom:10px;">🎉</div>
+      <div style="font-weight:700;font-size:1.2rem;margin-bottom:8px;">Order Placed!</div>
+      <div id="orderDetails" style="color:var(--muted);margin-bottom:18px"></div>
+      <button class="cta" id="closeOrderModal">Close</button>
+    </div>
+  </div>
+
+  <div class="offer" id="offerBox" style="display:none">🎁 20% OFF your first order! <button id="dismissOffer">Close</button></div>
+  <footer>© 2025 Mahuya Sarkar </footer>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+  // -----------------------
+  // Config
+  // -----------------------
+  let OSRM_BASE = 'https://router.project-osrm.org'; // default: public demo
+  const TARGET_MINUTES = 15;
+  const FALLBACK_DEPOT = {lat:12.9352, lng:77.6245}; // demo depot (Bengaluru)
+  const DEPOT_ENDPOINT = '/api/depot'; // backend endpoint we will create (optional)
+
+  // -----------------------
+  // Map & variables
+  // -----------------------
+  const map = L.map('map', {zoomControl:false}).setView([20.5937,78.9629], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  let depot = FALLBACK_DEPOT;
+  let depotMarker = L.marker([depot.lat, depot.lng]).addTo(map).bindPopup('Depot').openPopup();
+  let userPos = null, userMarker = null, riderMarker = null, routeLine = null, simInterval = null;
+  let cartCount = 0;
+
+  // UI refs
+  const locBtn = document.getElementById('locBtn'), startSimBtn = document.getElementById('startSim');
+  const etaDisplay = document.getElementById('etaDisplay'), etaSmall = document.getElementById('etaSmall');
+  const progressBar = document.getElementById('progressBar'), progressPct = document.getElementById('progressPct');
+  const destLabel = document.getElementById('destLabel'), orderStatus = document.getElementById('orderStatus');
+  const cartBadge = document.getElementById('cartBadge'), globalBuy = document.getElementById('globalBuy');
+  const offerBox = document.getElementById('offerBox'), dismissOffer = document.getElementById('dismissOffer');
+  const buyBtns = document.querySelectorAll('.buyBtn');
+
+  // -----------------------
+  // Utility helpers
+  // -----------------------
+  function formatMMSS(s){ if(s<0) s=0; const m=Math.floor(s/60), sec=s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+  function distanceMeters(a,b){ const R=6371000; const toRad=d=>d*Math.PI/180; const dLat=toRad(b.lat-a.lat), dLon=toRad(b.lng-a.lng); const lat1=toRad(a.lat), lat2=toRad(b.lat); const A=Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1)*Math.cos(lat2); const C=2*Math.atan2(Math.sqrt(A),Math.sqrt(1-A)); return R*C; }
+  function lerp(a,b,t){ return {lat:a.lat + (b.lat-a.lat)*t, lng:a.lng + (b.lng-a.lng)*t}; }
+
+  // -----------------------
+  // Fetch depot from backend (optional)
+  // -----------------------
+  async function fetchDepot(){
+    try {
+      const res = await fetch(DEPOT_ENDPOINT, {cache:'no-store'});
+      if(!res.ok) throw new Error('no depot');
+      const data = await res.json();
+      if(data && data.lat && data.lng){
+        depot = {lat: parseFloat(data.lat), lng: parseFloat(data.lng)};
+        if(depotMarker) depotMarker.setLatLng([depot.lat, depot.lng]);
+        else depotMarker = L.marker([depot.lat,depot.lng]).addTo(map);
+      }
+    } catch(e){
+      // silent fallback to FALLBACK_DEPOT
+      depot = FALLBACK_DEPOT;
+    }
+    // update map center to include depot
+    centerMap();
+  }
+
+  // call fetchDepot (if backend exists)
+  fetchDepot();
+
+  // -----------------------
+  // Set user position & UI helpers
+  // -----------------------
+  function setUserPosition(lat,lng,label){
+    userPos = {lat,lng};
+    if(userMarker) userMarker.setLatLng([lat,lng]);
+    else userMarker = L.marker([lat,lng], {title:'You'}).addTo(map).bindPopup(label||'You');
+    destLabel.textContent = label || 'Your Location';
+    startSimBtn.disabled = false;
+    centerMap();
+  }
+
+  locBtn.addEventListener('click', ()=>{
+    if(!navigator.geolocation){
+      locBtn.textContent = 'Not supported';
+      return;
+    }
+    locBtn.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(pos=>{
+      locBtn.textContent = '📍 Detect My Location';
+      setUserPosition(pos.coords.latitude, pos.coords.longitude, 'Your Location');
+    }, err=>{
+      locBtn.textContent = '📍 Detect My Location';
+      setUserPosition(12.9716,77.5946,'Default Location');
+    }, {enableHighAccuracy:true, timeout:10000});
+  });
+
+  function centerMap(){
+    const pts = [[depot.lat, depot.lng]];
+    if(userPos) pts.push([userPos.lat, userPos.lng]);
+    map.fitBounds(pts, {padding:[60,60]});
+  }
+
+  // -----------------------
+  // OSRM route fetch
+  // -----------------------
+  async function fetchRouteOSRM(start, end){
+    const coords = `${start.lng},${start.lat};${end.lng},${end.lat}`;
+    const url = `${OSRM_BASE}/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('OSRM fetch failed');
+    const data = await res.json();
+    if(!data.routes || !data.routes.length) throw new Error('No route');
+    return data.routes[0];
+  }
+
+  function geojsonToLatLngs(g){ return g.coordinates.map(c=>({lat:c[1], lng:c[0]})); }
+
+  function setRoute(coords){
+    if(routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline(coords.map(c=>[c.lat,c.lng]), {color: getComputedStyle(document.documentElement).getPropertyValue('--primary') || '#ff4b2b', weight:5}).addTo(map);
+  }
+
+  // -----------------------
+  // Smooth animation: easing + variable speed
+  // -----------------------
+  function animateRouteSmooth(routeCoords, targetSeconds = TARGET_MINUTES*60){
+    if(riderMarker) map.removeLayer(riderMarker);
+    if(simInterval) clearInterval(simInterval);
+
+    // Build dense path by subdividing segments using distance
+    const dense = [];
+    for(let i=0;i<routeCoords.length-1;i++){
+      const a = routeCoords[i], b = routeCoords[i+1];
+      const segM = distanceMeters(a,b);
+      // substep length ~5-8m for fine motion
+      const stepMeters = 6;
+      const steps = Math.max(1, Math.round(segM / stepMeters));
+      for(let s=0;s<steps;s++){
+        const t = s/steps;
+        dense.push({lat: a.lat + (b.lat-a.lat)*t, lng: a.lng + (b.lng-a.lng)*t});
+      }
+    }
+    dense.push(routeCoords[routeCoords.length-1]);
+
+    // We'll vary speed a bit (simulate traffic, turns). Create weight per frame
+    const weights = new Array(dense.length).fill(1).map((v,i)=>{
+      // slight sinusoidal speed variation for realism (slower at middle sometimes)
+      const w = 1 + 0.15*Math.sin(i / dense.length * Math.PI * 4);
+      return w;
+    });
+
+    // Convert weights to time per frame so total time ~= targetSeconds
+    const totalWeight = weights.reduce((a,b)=>a+b,0);
+    const totalMs = targetSeconds * 1000;
+    const msPerUnit = totalMs / totalWeight;
+
+    // start marker
+    riderMarker = L.marker([dense[0].lat, dense[0].lng], {
+      icon: L.icon({ iconUrl: 'https://img.icons8.com/emoji/48/000000/delivery-truck-emoji.png', iconSize:[36,36], iconAnchor:[18,18] })
+    }).addTo(map).bindPopup('Rider');
+
+    let idx = 0;
+    function step(){
+      if(idx >= dense.length){
+        orderStatus.textContent = 'Delivered ✅';
+        etaDisplay.textContent = '00:00'; etaSmall.textContent = '00:00';
+        progressBar.style.width = '100%'; progressPct.textContent = '100%';
+        return;
+      }
+      const p = dense[idx];
+      riderMarker.setLatLng([p.lat, p.lng]);
+      const pct = Math.round((idx / dense.length) * 100);
+      progressBar.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
+      // remaining time estimate
+      const remainWeight = weights.slice(idx).reduce((a,b)=>a+b,0);
+      const remainingMs = Math.round(remainWeight * msPerUnit);
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      etaDisplay.textContent = formatMMSS(remainingSec);
+      etaSmall.textContent = formatMMSS(remainingSec);
+      // status text
+      if(pct < 30) orderStatus.textContent = 'Rider assigned';
+      else if(pct < 70) orderStatus.textContent = 'Rider en route';
+      else if(pct < 100) orderStatus.textContent = 'Arriving soon';
+
+      // schedule next step with variable ms according to weight
+      const waitMs = Math.max(50, Math.round(weights[idx] * msPerUnit));
+      idx++;
+      simInterval = setTimeout(step, waitMs);
+    }
+    // kick off
+    step();
+    centerMap();
+  }
+
+  // fallback straight-line animation (same smoother function)
+  function straightLineSim(endPos){
+    const straight = [{lat:depot.lat, lng:depot.lng}, endPos];
+    setRoute(straight);
+    animateRouteSmooth(straight, TARGET_MINUTES*60);
+  }
+
+  // -----------------------
+  // Order placement (demo)
+  // -----------------------
+  function placeOrder(productName){
+    cartCount++; cartBadge.textContent = `Cart: ${cartCount}`;
+
+    orderStatus.textContent = `Order placed: ${productName}`;
+    // Show a toast or modal instead of alert
+    if(window.showOrderModal){
+      showOrderModal(`Order placed: <b>${productName}</b><br>Estimated delivery: <b>${TARGET_MINUTES} minutes</b>.`);
+    }
+
+    if(!userPos){
+      setUserPosition(12.9716,77.5946,'Default Location');
+    }
+
+    // Attempt OSRM route; fallback if fails
+    (async ()=>{
+      try {
+        const route = await fetchRouteOSRM(depot, userPos);
+        const coords = geojsonToLatLngs(route.geometry);
+        setRoute(coords);
+        animateRouteSmooth(coords, TARGET_MINUTES*60);
+      } catch(e){
+        console.warn('OSRM failed; fallback', e);
+        straightLineSim(userPos);
+      }
+    })();
+  }
+
+  // bind buttons
+  document.getElementById('globalBuy').addEventListener('click', ()=>placeOrder('One-click order'));
+  document.querySelectorAll('.buyBtn').forEach(b => b.addEventListener('click', e=>{
+    const name = e.target.closest('.card')?.dataset?.name || 'Item';
+    placeOrder(name);
+  }));
+
+  document.getElementById('startSim').addEventListener('click', ()=>{
+    if(!userPos){
+      if(window.showOrderModal){
+        showOrderModal('Please detect your location first!');
+      }
+      return;
+    }
+    placeOrder('Manual order');
+  });
+
+  // -----------------------
+  // OSRM helpers
+  // -----------------------
+  async function fetchRouteOSRM(start, end){
+    const coords = `${start.lng},${start.lat};${end.lng},${end.lat}`;
+    const url = `${OSRM_BASE}/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('OSRM fetch failed: ' + r.status);
+    const json = await r.json();
+    if(!json.routes || json.routes.length === 0) throw new Error('No route returned');
+    return json.routes[0];
+  }
+  function geojsonToLatLngs(g){ return g.coordinates.map(c=>({lat:c[1], lng:c[0]})); }
+
+  // -----------------------
+  // Geolocation & misc
+  // -----------------------
+  function setUserPosition(lat,lng,label){
+    userPos = {lat,lng};
+    if(userMarker) userMarker.setLatLng([lat,lng]);
+    else userMarker = L.marker([lat,lng], {title:'You'}).addTo(map).bindPopup(label||'You');
+    destLabel.textContent = label || 'Your Location';
+    startSimBtn.disabled = false;
+    centerMap();
+  }
+
+  locBtn.addEventListener('click', ()=>{
+    if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+    locBtn.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(pos=>{
+      locBtn.textContent = '📍 Detect My Location';
+      setUserPosition(pos.coords.latitude, pos.coords.longitude, 'Your Location (browser)');
+    }, err=>{
+      locBtn.textContent = '📍 Detect My Location';
+      alert('Geolocation failed/denied; using demo location');
+      setUserPosition(12.9716,77.5946,'Demo Location');
+    }, {enableHighAccuracy:true, timeout:10000});
+  });
+
+  // allow clicking map to set destination quickly
+  map.on('click', e => setUserPosition(e.latlng.lat, e.latlng.lng, 'Selected Location'));
+
+  // center map function
+  function centerMap(){
+    const pts = [[depot.lat, depot.lng]];
+    if(userPos) pts.push([userPos.lat, userPos.lng]);
+    map.fitBounds(pts, {padding:[60,60]});
+  }
+
+  // load optional depot from backend /api/depot (if present)
+  async function loadDepotFromBackend(){
+    try {
+      const res = await fetch('/api/depot', {cache:'no-store'});
+      if(!res.ok) throw new Error('no depot');
+      const json = await res.json();
+      if(json && json.lat && json.lng){
+        depot = {lat: parseFloat(json.lat), lng: parseFloat(json.lng)};
+        if(depotMarker) depotMarker.setLatLng([depot.lat, depot.lng]);
+        else depotMarker = L.marker([depot.lat, depot.lng]).addTo(map).bindPopup('Depot');
+      }
+    } catch(e){
+      // keep default depot
+      console.info('No backend depot; using fallback depot');
+    }
+    centerMap();
+  }
+
+  loadDepotFromBackend();
+
+  // show/hide offer
+  setTimeout(()=>{ offerBox.style.display='block'; }, 1200);
+  setTimeout(()=>{ offerBox.style.display='none'; }, 9000);
+  dismissOffer.addEventListener('click', ()=> offerBox.style.display='none');
+
+  // init view
+  map.setView([depot.lat, depot.lng], 12);
+  updateCartUI = ()=> document.getElementById('cartBadge').textContent = `Cart: ${cartCount}`;
+  updateCartUI();
+
+  </script>
+</body>
+</html>
